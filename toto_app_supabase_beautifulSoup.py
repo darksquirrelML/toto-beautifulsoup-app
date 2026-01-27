@@ -194,9 +194,9 @@ tab = st.radio("Navigation", ["Trends", "Hot / Cold Numbers", "Machine Learning 
 # -------------------------
 if tab == "Trends":
     st.header("TOTO Trends & Statistics")
-    latest_date = df["Draw Date"].iloc[-1]
-    latest_main = [int(x) for x in df["Winning No"].iloc[-1].split(",")]
-    latest_add = int(df["Additional No"].iloc[-1])
+    latest_date = df["Draw Date"].iloc[0]
+    latest_main = [int(x) for x in df["Winning No"].iloc[0].split(",")]
+    latest_add = int(df["Additional No"].iloc[0])
     st.subheader("Latest TOTO Result")
     st.write(f"**Draw Date:** {latest_date}")
     st.write(f"**Main Numbers:** {latest_main}")
