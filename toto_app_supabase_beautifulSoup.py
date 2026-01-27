@@ -110,7 +110,7 @@ def update_supabase(draws):
 def load_data_from_supabase(limit=None):
     query = supabase.table("toto_results") \
         .select("draw_no, draw_date, winning_no, additional_no") \
-        .order("draw_no", desc=False)
+        .order("draw_no", desc=True)
     if limit:
         query = query.limit(limit)
     response = query.execute()
