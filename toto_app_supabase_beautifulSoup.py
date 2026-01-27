@@ -248,14 +248,202 @@ elif tab == "Hot / Cold Numbers":
         st.write(cold)
 
 # -------------------------
-# Machine Learning Tab (simplified)
+# Machine Learning Tab — LSTM Prediction
 # -------------------------
 elif tab == "Machine Learning Prediction":
     st.header("Machine Learning Prediction — LSTM (7 numbers)")
-    st.markdown("Train LSTM on 7-number draws (6 main + 1 additional).")
+    st.markdown("Train LSTM on 7-number draws (6 main + 1 additional). Progress + PDF export supported.")
+
+    st.write(f"Epochs: {train_epochs}")
+    st.write(f"Batch size: {batch_size}")
+    st.write(f"Window size: {window_size}")
+    st.write(f"Train ratio: {train_ratio}")
 
     if not TF_AVAILABLE:
         st.warning("TensorFlow not installed. Install it (`pip install tensorflow`) to use LSTM features.")
     else:
-        st.info("LSTM training code can be added here (same as your previous implementation).")
+        # --- Helper: convert draws to multihot encoding ---
+        def draws_to_multihot(df_in):
+            X = []
+            for _, row in df_in.iterrows():
+                v = np.zeros(49, dtype=np.float32)
+                for n in row['Winning']:
+                    v[int(n)-1] = 1.0
+                if row['Additional No'] is not None:
+                    v[int(row['Additional No'])-1] = 1.0
+                X.append(v)
+            return np.array(X)
+
+        data_X = draws_to_multihot(df)
+        if len(data_X) <= window_size:
+            st.error("Not enough draws to build sequences. Reduce window size or add more data.")
+        else:
+            sequences = []
+            targets = []
+            for i in range(len(data_X) - window_size):
+                sequences.append(data_X[i:i+window_size])
+                targets.append(data_X[i+window_size])
+            sequences = np.array(sequences)
+            targets = np.array(targets)
+            st.write(f"Prepared {len(sequences)} sequences (window={window_size}) — features=49")
+
+            model_path = "lstm_model.h5"
+
+            # --- Build model ---
+            def build_model(window_size, features=49):
+                tf.random.set_seed(seed)
+                model = keras.Sequential([
+                    layers.Input(shape=(window_size, features)),
+                    layers.LSTM(128, return_sequences=False),
+                    layers.Dropout(0.2),
+                    layers.Dense(64, activation='relu'),
+                    layers.Dense(features, activation='sigmoid')
+                ])
+                model.compile(optimizer='adam', loss='binary_crossentropy')
+                return model
+
+            model = None
+            if os.path.exists(model_path):
+                st.info("Saved model found on disk")
+                if st.button("Load saved model"):
+                    with st.spinner("Loading model..."):
+                        model = keras.models.load_model(model_path)
+                    st.success("Model loaded")
+
+            # --- Train LSTM ---
+            if st.button("Train LSTM model", key="train_lstm"):
+
+                # CREATE MODEL ONLY IF NOT EXISTS
+                if st.session_state.lstm_model is None:
+                    st.session_state.lstm_model = build_model(window_size)
+                model = st.session_state.lstm_model  # use session model
+
+                progress = st.progress(0)
+                status = st.empty()
+                loss_chart = st.empty()
+                start_time = time.time()
+                history_logs = {"loss": [], "val_loss": []}
+
+                val_split = 1.0 - float(train_ratio)
+
+                for ep in range(train_epochs):
+                    hist = model.fit(sequences, targets,
+                                     epochs=1,
+                                     batch_size=batch_size,
+                                     validation_split=val_split,
+                                     verbose=0)
+                    loss = hist.history.get('loss', [None])[-1]
+                    val_loss = hist.history.get('val_loss', [None])[-1]
+                    history_logs['loss'].append(loss)
+                    history_logs['val_loss'].append(val_loss)
+
+                    percent = int(((ep + 1) / train_epochs) * 100)
+                    progress.progress(percent)
+                    elapsed = time.time() - start_time
+                    avg_per_epoch = elapsed / (ep + 1)
+                    remaining = avg_per_epoch * (train_epochs - (ep + 1))
+                    status.text(f"Epoch {ep+1}/{train_epochs} — loss: {loss:.4f} val_loss: {val_loss:.4f} — ETA: {remaining:.1f}s")
+
+                    loss_chart.line_chart({
+                        "loss": history_logs['loss'],
+                        "val_loss": history_logs['val_loss']
+                    })
+
+                model.save(model_path)
+                progress.progress(100)
+                status.text(f"Training completed in {time.time() - start_time:.1f}s — model saved")
+                st.success("Model training finished and saved")
+
+            # --- Prediction ---
+            st.markdown("### Predict next draw (LSTM)")
+
+            last_n_for_priority = st.number_input("Number of recent draws to prioritize", min_value=5, max_value=50, value=10, step=1)
+
+            if st.button("Predict next draw (LSTM)"):
+                if model is None:
+                    if os.path.exists(model_path):
+                        with st.spinner("Loading saved model..."):
+                            model = keras.models.load_model(model_path)
+                    else:
+                        st.error("No trained model available. Train or load a model first.")
+                        model = None
+
+                if model is not None:
+                    last_seq = data_X[-window_size:]
+                    inp = last_seq.reshape((1, window_size, 49)).astype(np.float32)
+
+                    mc = int(mc_samples)
+                    probs_accum = np.zeros(49, dtype=np.float64)
+                    prog = st.progress(0)
+                    status_p = st.empty()
+                    t0 = time.time()
+
+                    for i in range(mc):
+                        pred = model(inp, training=True).numpy().reshape(-1)
+                        probs_accum += pred
+                        prog.progress(int(((i+1)/mc)*100))
+                        elapsed = time.time() - t0
+                        avg = elapsed / (i+1)
+                        remaining = avg * (mc - (i+1))
+                        status_p.text(f"MC pass {i+1}/{mc} — ETA: {remaining:.1f}s")
+
+                    avg_probs = probs_accum / mc
+
+                    # prioritize numbers from last N draws
+                    recent_draws = df.tail(last_n_for_priority)
+                    recent_numbers = set()
+                    for _, row in recent_draws.iterrows():
+                        recent_numbers.update(row['Winning'])
+                        if row['Additional No'] is not None:
+                            recent_numbers.add(row['Additional No'])
+
+                    all_probs_sorted = [(i+1, avg_probs[i]) for i in range(49)]
+                    all_probs_sorted.sort(key=lambda x: x[1], reverse=True)
+
+                    top7_probs = []
+                    for num, prob in all_probs_sorted:
+                        if num in recent_numbers:
+                            top7_probs.append((num, prob))
+                        if len(top7_probs) == 7:
+                            break
+                    if len(top7_probs) < 7:
+                        for num, prob in all_probs_sorted:
+                            if num not in [x[0] for x in top7_probs]:
+                                top7_probs.append((num, prob))
+                            if len(top7_probs) == 7:
+                                break
+
+                    table_data = []
+                    for num, prob in top7_probs:
+                        table_data.append({
+                            'Number': num,
+                            'Prob': prob,
+                            'Recent (last N draws)': 'Yes' if num in recent_numbers else 'No'
+                        })
+                    top7_idx = [x['Number'] for x in table_data]
+
+                    status_p.text("Prediction done.")
+                    prog.progress(100)
+                    st.success(f"Predicted numbers (6 main + 1 additional): {top7_idx}")
+                    st.table(pd.DataFrame(table_data).set_index('Number'))
+
+                    # PDF export
+                    if REPORTLAB_AVAILABLE:
+                        try:
+                            pdf_bytes = io.BytesIO()
+                            c = canvas.Canvas(pdf_bytes, pagesize=letter)
+                            text = c.beginText(40, 700)
+                            text.setFont("Helvetica", 14)
+                            text.textLine("Toto Prediction — LSTM")
+                            text.textLine(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                            text.textLine("")
+                            text.textLine("Predicted numbers (6 main + additional):")
+                            text.textLine(', '.join(map(str, list(top7_idx))))
+                            c.drawText(text)
+                            c.showPage()
+                            c.save()
+                            pdf_bytes.seek(0)
+                            st.download_button("Download prediction as PDF", data=pdf_bytes, file_name="toto_prediction.pdf", mime='application/pdf')
+                        except TypeError:
+                            st.warning("PDF export temporarily unavailable.")
 
