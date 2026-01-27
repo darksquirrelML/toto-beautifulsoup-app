@@ -2,6 +2,8 @@ streamlit
 pandas
 numpy
 plotly
-supabase
 tensorflow
 reportlab
+supabase
+requests
+beautifulsoup4
