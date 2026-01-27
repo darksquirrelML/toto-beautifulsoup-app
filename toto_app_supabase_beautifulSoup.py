@@ -106,7 +106,7 @@ def update_supabase(draws):
 # -------------------------
 # Load from Supabase
 # -------------------------
-@st.cache_data(ttl=300)
+# @st.cache_data(ttl=300)
 def load_data_from_supabase(limit=None):
     query = supabase.table("toto_results") \
         .select("draw_no, draw_date, winning_no, additional_no") \
