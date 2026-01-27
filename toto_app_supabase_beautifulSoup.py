@@ -152,7 +152,7 @@ if df.empty:
     st.error("No data found in Supabase. Please run the scraper first.")
     st.stop()
 
-st.write(f"**Dataset:** {len(df)} draws loaded — last draw date: {df.iloc[-1]['Draw Date']}")
+st.write(f"**Dataset:** {len(df)} draws loaded — last draw date: {df.iloc[0]['Draw Date']}")
 
 # -------------------------
 # Frequency helper
