@@ -25,6 +25,53 @@ SUPABASE_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+## Inject manifest dynamically ##############
+
+import streamlit as st
+import json
+import base64
+
+def load_icon(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+icon192 = load_icon("icon-192.png")
+icon512 = load_icon("icon-512.png")
+icon180 = load_icon("icon-180.png")
+
+manifest = {
+    "name": "Toto Prediction App",
+    "short_name": "Toto",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1f77b4",
+    "icons": [
+        {
+            "src": f"data:image/png;base64,{icon192}",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": f"data:image/png;base64,{icon512}",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
+
+manifest_json = json.dumps(manifest)
+
+st.markdown(f"""
+<link rel="manifest" href='data:application/json,{manifest_json}'>
+<link rel="apple-touch-icon" href="data:image/png;base64,{icon180}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+""", unsafe_allow_html=True)
+
+
+
+
 ## Add Icon #######################################
 
 st.set_page_config(
@@ -477,3 +524,16 @@ elif tab == "Machine Learning Prediction":
                         except TypeError:
                             st.warning("PDF export temporarily unavailable.")
 
+
+# import base64
+# 
+# def to_base64(path):
+#     with open(path, "rb") as f:
+#         return base64.b64encode(f.read()).decode()
+# 
+# icon192 = to_base64("icon-192.png")
+# icon512 = to_base64("icon-512.png")
+# icon180 = to_base64("icon-180.png")
+# 
+# print(icon192[:50])  # just to confirm
+# 
