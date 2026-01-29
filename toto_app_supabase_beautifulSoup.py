@@ -72,31 +72,31 @@ st.markdown(f"""
 
 
 
-## Add Icon #######################################
+# ## Add Icon #######################################
 
-st.set_page_config(
-    page_title="Toto Prediction App",
-    page_icon="🎯",
-    layout="wide"
-)
+# st.set_page_config(
+#     page_title="Toto Prediction App",
+#     page_icon="🎯",
+#     layout="wide"
+# )
 
-st.markdown("""
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#1f77b4">
+# st.markdown("""
+# <link rel="manifest" href="/static/manifest.json">
+# <meta name="theme-color" content="#1f77b4">
 
-<!-- iOS support -->
-<link rel="apple-touch-icon" href="/static/icon-180.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+# <!-- iOS support -->
+# <link rel="apple-touch-icon" href="/static/icon-180.png">
+# <meta name="apple-mobile-web-app-capable" content="yes">
+# <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-<!-- Service Worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/static/service-worker.js')
-    .then(() => console.log('Service Worker Registered'));
-}
-</script>
-""", unsafe_allow_html=True)
+# <!-- Service Worker -->
+# <script>
+# if ('serviceWorker' in navigator) {
+#   navigator.serviceWorker.register('/static/service-worker.js')
+#     .then(() => console.log('Service Worker Registered'));
+# }
+# </script>
+# """, unsafe_allow_html=True)
 
 
 ###########################################################
