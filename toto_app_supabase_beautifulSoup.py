@@ -30,7 +30,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # -------------------------
 MODEL_BUCKET = "models"
 MODEL_FILE = "lstm_model.h5"
-LOCAL_MODEL_PATH = "lstm_model.h5"
+model_path = "lstm_model.h5"
 
 def upload_model_to_supabase():
     try:
