@@ -24,6 +24,44 @@ SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+###################################################################################
+# -------------------------
+# Supabase Storage Config
+# -------------------------
+MODEL_BUCKET = "models"
+MODEL_FILE = "lstm_model.h5"
+LOCAL_MODEL_PATH = "lstm_model.h5"
+
+def upload_model_to_supabase():
+    try:
+        with open(LOCAL_MODEL_PATH, "rb") as f:
+            supabase.storage.from_(MODEL_BUCKET).upload(
+                path=MODEL_FILE,
+                file=f,
+                file_options={"upsert": True}
+            )
+        st.success("Model uploaded to Supabase successfully")
+    except Exception as e:
+        st.error(f"Upload failed: {e}")
+
+def download_model_from_supabase():
+    try:
+        data = supabase.storage.from_(MODEL_BUCKET).download(MODEL_FILE)
+        with open(LOCAL_MODEL_PATH, "wb") as f:
+            f.write(data)
+        return True
+    except Exception:
+        return False
+
+
+if st.session_state.lstm_model is None:
+    if os.path.exists(LOCAL_MODEL_PATH):
+        st.session_state.lstm_model = keras.models.load_model(LOCAL_MODEL_PATH)
+    else:
+        if download_model_from_supabase():
+            st.session_state.lstm_model = keras.models.load_model(LOCAL_MODEL_PATH)
+
+##################################################################################################################
 # -------------------------
 # Session state
 # -------------------------
@@ -348,8 +386,14 @@ elif tab == "Machine Learning Prediction":
                         "loss": history_logs['loss'],
                         "val_loss": history_logs['val_loss']
                     })
+#########################################################################################################################################
+                # model.save(model_path)
+                model.save(LOCAL_MODEL_PATH)
+                upload_model_to_supabase()
 
-                model.save(model_path)
+                st.session_state.lstm_model = model
+######################################################################################################################
+
                 progress.progress(100)
                 status.text(f"Training completed in {time.time() - start_time:.1f}s — model saved")
                 st.success("Model training finished and saved")
@@ -360,13 +404,20 @@ elif tab == "Machine Learning Prediction":
             last_n_for_priority = st.number_input("Number of recent draws to prioritize", min_value=5, max_value=50, value=10, step=1)
 
             if st.button("Predict next draw (LSTM)"):
+
+                model = st.session_state.lstm_model
+
                 if model is None:
-                    if os.path.exists(model_path):
-                        with st.spinner("Loading saved model..."):
-                            model = keras.models.load_model(model_path)
-                    else:
-                        st.error("No trained model available. Train or load a model first.")
-                        model = None
+                    st.error("No trained model available. Train the model first.")
+                    st.stop()      
+
+                # if model is None:
+                #     if os.path.exists(model_path):
+                #         with st.spinner("Loading saved model..."):
+                #             model = keras.models.load_model(model_path)
+                #     else:
+                #         st.error("No trained model available. Train or load a model first.")
+                #         model = None
 
                 if model is not None:
                     last_seq = data_X[-window_size:]
