@@ -34,7 +34,7 @@ LOCAL_MODEL_PATH = "lstm_model.h5"
 
 def upload_model_to_supabase():
     try:
-        with open(LOCAL_MODEL_PATH, "rb") as f:
+        with open(model_path, "rb") as f:
             supabase.storage.from_(MODEL_BUCKET).upload(
                 path=MODEL_FILE,
                 file=f,
@@ -47,7 +47,7 @@ def upload_model_to_supabase():
 def download_model_from_supabase():
     try:
         data = supabase.storage.from_(MODEL_BUCKET).download(MODEL_FILE)
-        with open(LOCAL_MODEL_PATH, "wb") as f:
+        with open(model_path, "wb") as f:
             f.write(data)
         return True
     except Exception:
@@ -60,11 +60,11 @@ if "lstm_model" not in st.session_state:
 
 # Now safe to check
 if st.session_state.lstm_model is None:
-    if os.path.exists(LOCAL_MODEL_PATH):
-        st.session_state.lstm_model = keras.models.load_model(LOCAL_MODEL_PATH)
+    if os.path.exists(model_path):
+        st.session_state.lstm_model = keras.models.load_model(model_path)
     else:
         if download_model_from_supabase():
-            st.session_state.lstm_model = keras.models.load_model(LOCAL_MODEL_PATH)
+            st.session_state.lstm_model = keras.models.load_model(model_path)
 
 ##################################################################################################################
 # -------------------------
@@ -393,7 +393,7 @@ elif tab == "Machine Learning Prediction":
                     })
 #########################################################################################################################################
                 # model.save(model_path)
-                model.save(LOCAL_MODEL_PATH)
+                model.save(model_path)
                 upload_model_to_supabase()
 
                 st.session_state.lstm_model = model
