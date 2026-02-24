@@ -54,6 +54,11 @@ def download_model_from_supabase():
         return False
 
 
+# Initialize session state if missing
+if "lstm_model" not in st.session_state:
+    st.session_state.lstm_model = None
+
+# Now safe to check
 if st.session_state.lstm_model is None:
     if os.path.exists(LOCAL_MODEL_PATH):
         st.session_state.lstm_model = keras.models.load_model(LOCAL_MODEL_PATH)
