@@ -24,49 +24,83 @@ SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-###################################################################################
-# -------------------------
-# Supabase Storage Config
-# -------------------------
-MODEL_BUCKET = "models"
-MODEL_FILE = "lstm_model.h5"
-model_path = "lstm_model.h5"
 
-def upload_model_to_supabase():
-    try:
-        with open(model_path, "rb") as f:
-            supabase.storage.from_(MODEL_BUCKET).upload(
-                path=MODEL_FILE,
-                file=f,
-                file_options={"upsert": True}
-            )
-        st.success("Model uploaded to Supabase successfully")
-    except Exception as e:
-        st.error(f"Upload failed: {e}")
+## Inject manifest dynamically ##############
 
-def download_model_from_supabase():
-    try:
-        data = supabase.storage.from_(MODEL_BUCKET).download(MODEL_FILE)
-        with open(model_path, "wb") as f:
-            f.write(data)
-        return True
-    except Exception:
-        return False
+import streamlit as st
+import json
+import base64
+
+def load_icon(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+icon192 = load_icon("icon-192.png")
+icon512 = load_icon("icon-512.png")
+icon180 = load_icon("icon-180.png")
+
+manifest = {
+    "name": "Toto Prediction App",
+    "short_name": "Toto",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1f77b4",
+    "icons": [
+        {
+            "src": f"data:image/png;base64,{icon192}",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": f"data:image/png;base64,{icon512}",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
+
+manifest_json = json.dumps(manifest)
+
+st.markdown(f"""
+<link rel="manifest" href='data:application/json,{manifest_json}'>
+<link rel="apple-touch-icon" href="data:image/png;base64,{icon180}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+""", unsafe_allow_html=True)
 
 
-# Initialize session state if missing
-if "lstm_model" not in st.session_state:
-    st.session_state.lstm_model = None
 
-# Now safe to check
-if st.session_state.lstm_model is None:
-    if os.path.exists(model_path):
-        st.session_state.lstm_model = keras.models.load_model(model_path)
-    else:
-        if download_model_from_supabase():
-            st.session_state.lstm_model = keras.models.load_model(model_path)
 
-##################################################################################################################
+# ## Add Icon #######################################
+
+# st.set_page_config(
+#     page_title="Toto Prediction App",
+#     page_icon="🎯",
+#     layout="wide"
+# )
+
+# st.markdown("""
+# <link rel="manifest" href="/static/manifest.json">
+# <meta name="theme-color" content="#1f77b4">
+
+# <!-- iOS support -->
+# <link rel="apple-touch-icon" href="/static/icon-180.png">
+# <meta name="apple-mobile-web-app-capable" content="yes">
+# <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+# <!-- Service Worker -->
+# <script>
+# if ('serviceWorker' in navigator) {
+#   navigator.serviceWorker.register('/static/service-worker.js')
+#     .then(() => console.log('Service Worker Registered'));
+# }
+# </script>
+# """, unsafe_allow_html=True)
+
+
+###########################################################
+
 # -------------------------
 # Session state
 # -------------------------
@@ -391,14 +425,8 @@ elif tab == "Machine Learning Prediction":
                         "loss": history_logs['loss'],
                         "val_loss": history_logs['val_loss']
                     })
-#########################################################################################################################################
-                # model.save(model_path)
+
                 model.save(model_path)
-                upload_model_to_supabase()
-
-                st.session_state.lstm_model = model
-######################################################################################################################
-
                 progress.progress(100)
                 status.text(f"Training completed in {time.time() - start_time:.1f}s — model saved")
                 st.success("Model training finished and saved")
@@ -409,20 +437,13 @@ elif tab == "Machine Learning Prediction":
             last_n_for_priority = st.number_input("Number of recent draws to prioritize", min_value=5, max_value=50, value=10, step=1)
 
             if st.button("Predict next draw (LSTM)"):
-
-                model = st.session_state.lstm_model
-
                 if model is None:
-                    st.error("No trained model available. Train the model first.")
-                    st.stop()      
-
-                # if model is None:
-                #     if os.path.exists(model_path):
-                #         with st.spinner("Loading saved model..."):
-                #             model = keras.models.load_model(model_path)
-                #     else:
-                #         st.error("No trained model available. Train or load a model first.")
-                #         model = None
+                    if os.path.exists(model_path):
+                        with st.spinner("Loading saved model..."):
+                            model = keras.models.load_model(model_path)
+                    else:
+                        st.error("No trained model available. Train or load a model first.")
+                        model = None
 
                 if model is not None:
                     last_seq = data_X[-window_size:]
