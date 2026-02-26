@@ -357,11 +357,9 @@ elif tab == "Machine Learning Prediction":
             # --- Train LSTM ---
             if st.button("Train LSTM model", key="train_lstm"):
 
-                # CREATE MODEL ONLY IF NOT EXISTS
-                if st.session_state.lstm_model is None:
-                    st.session_state.lstm_model = build_model(window_size)
-                model = st.session_state.lstm_model  # use session model
-
+                # ALWAYS create a new model when training
+                model = build_model(window_size)
+                
                 progress = st.progress(0)
                 status = st.empty()
                 loss_chart = st.empty()
