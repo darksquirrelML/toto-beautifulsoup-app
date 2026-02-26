@@ -17,6 +17,12 @@ import time
 import io
 import os
 
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
 # -------------------------
 # Supabase setup
 # -------------------------
@@ -79,17 +85,12 @@ if "lstm_model" not in st.session_state:
 # -------------------------
 # Optional ML libs
 # -------------------------
-try:
-    import tensorflow as tf
-    from tensorflow import keras
-    from tensorflow.keras import layers
+try:   
     TF_AVAILABLE = True
 except Exception:
     TF_AVAILABLE = False
 
 try:
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
     REPORTLAB_AVAILABLE = True
 except Exception:
     REPORTLAB_AVAILABLE = False
