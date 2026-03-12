@@ -104,10 +104,10 @@ with st.sidebar:
     st.header("Settings")
     num_draws = st.slider("Number of past draws to analyze", min_value=20, max_value=2000, value=300, step=10)
     show_animated = st.checkbox("Show animated trend", True)
-    train_epochs = st.number_input("LSTM train epochs", min_value=1, max_value=600, value=200)
+    train_epochs = st.number_input("LSTM train epochs", min_value=1, max_value=600, value=500)
     batch_size = st.number_input("Batch size", min_value=8, max_value=512, value=64)
     train_ratio = st.slider("Train ratio", 0.5, 0.95, 0.85)
-    window_size = st.number_input("LSTM window size", min_value=1, max_value=30, value=10)
+    window_size = st.number_input("LSTM window size", min_value=1, max_value=30, value=15)
     seed = st.number_input("Random seed", value=42)
     mc_samples = st.number_input("MC prediction passes", min_value=1, max_value=200, value=20)
 
