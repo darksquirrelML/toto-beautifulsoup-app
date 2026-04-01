@@ -80,7 +80,8 @@ if "lstm_model" not in st.session_state:
     st.session_state.lstm_model = None
 
 # Now safe to check
-if st.session_state.lstm_model is None:
+# if st.session_state.lstm_model is None:
+if "lstm_model" not in st.session_state or st.session_state.lstm_model is None:    
     if os.path.exists(model_path):
         st.session_state.lstm_model = keras.models.load_model(model_path)
     else:
