@@ -39,7 +39,7 @@ def upload_model_to_supabase():
             supabase.storage.from_(MODEL_BUCKET).upload(
                 path=MODEL_FILE,
                 file=f,
-                file_options={"upsert": True}
+                file_options={"upsert": "true"}
             )
         st.success("Model uploaded to Supabase successfully")
     except Exception as e:
