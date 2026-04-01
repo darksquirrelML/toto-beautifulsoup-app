@@ -17,6 +17,9 @@ from tensorflow.keras import layers
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+
+st.write("Current path:", os.getcwd())
+
 # -------------------------
 # Supabase setup
 # -------------------------
