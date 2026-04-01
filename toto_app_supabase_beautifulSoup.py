@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 # Toto Prediction Dashboard — Full Supabase Integration
 import streamlit as st
 import pandas as pd
@@ -50,14 +44,35 @@ def upload_model_to_supabase():
     except Exception as e:
         st.error(f"Upload failed: {e}")
 
+#####################################################################################
 def download_model_from_supabase():
     try:
-        data = supabase.storage.from_(MODEL_BUCKET).download(MODEL_FILE)
+        import requests
+
+        url = "YOUR_PUBLIC_MODEL_URL"   # 🔥 replace this
+
+        r = requests.get(url)
+        r.raise_for_status()
+
         with open(model_path, "wb") as f:
-            f.write(data)
+            f.write(r.content)
+
         return True
-    except Exception:
+
+    except Exception as e:
+        print("Download error:", e)
         return False
+###########################################################################################
+
+
+# def download_model_from_supabase():
+#     try:
+#         data = supabase.storage.from_(MODEL_BUCKET).download(MODEL_FILE)
+#         with open(model_path, "wb") as f:
+#             f.write(data)
+#         return True
+#     except Exception:
+#         return False
 
 
 # Initialize session state if missing
@@ -415,13 +430,7 @@ elif tab == "Machine Learning Prediction":
                     st.error("No trained model available. Train the model first.")
                     st.stop()      
 
-                # if model is None:
-                #     if os.path.exists(model_path):
-                #         with st.spinner("Loading saved model..."):
-                #             model = keras.models.load_model(model_path)
-                #     else:
-                #         st.error("No trained model available. Train or load a model first.")
-                #         model = None
+               
 
                 if model is not None:
                     last_seq = data_X[-window_size:]
@@ -502,17 +511,4 @@ elif tab == "Machine Learning Prediction":
                         except TypeError:
                             st.warning("PDF export temporarily unavailable.")
 
-
-# import base64
-# 
-# def to_base64(path):
-#     with open(path, "rb") as f:
-#         return base64.b64encode(f.read()).decode()
-# 
-# icon192 = to_base64("icon-192.png")
-# icon512 = to_base64("icon-512.png")
-# icon180 = to_base64("icon-180.png")
-# 
-# print(icon192[:50])  # just to confirm
-# 
 
