@@ -349,6 +349,7 @@ elif tab == "Machine Learning Prediction":
             st.write(f"Prepared {len(sequences)} sequences (window={window_size}) — features=49")
 
             model_path = "lstm_model.h5"
+            model_path_keras = "lstm_model.keras"
 
             # --- Build model ---
             def build_model(window_size, features=49):
@@ -410,8 +411,11 @@ elif tab == "Machine Learning Prediction":
 #########################################################################################################################################
                 # model.save(model_path)
                 model.save(model_path)
+                model_path_keras = "lstm_model.keras"
+                
                 upload_model_to_supabase()
-
+                upload_model_to_supabase(model_path_keras)
+                
                 st.session_state.lstm_model = model
 ######################################################################################################################
 
