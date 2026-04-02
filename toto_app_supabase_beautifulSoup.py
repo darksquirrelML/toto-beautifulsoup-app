@@ -33,7 +33,7 @@ MODEL_BUCKET = "models"
 MODEL_FILE = "lstm_model.h5"
 model_path = "lstm_model.h5"
 
-def upload_model_to_supabase(file_path):
+def upload_model_to_supabase():
     try:
         with open(file_path, "rb") as f:
             supabase.storage.from_(MODEL_BUCKET).upload(
