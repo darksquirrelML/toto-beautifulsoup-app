@@ -33,17 +33,29 @@ MODEL_BUCKET = "models"
 MODEL_FILE = "lstm_model.h5"
 model_path = "lstm_model.h5"
 
-def upload_model_to_supabase():
+def upload_model_to_supabase(file_path):
     try:
-        with open(model_path, "rb") as f:
+        with open(file_path, "rb") as f:
             supabase.storage.from_(MODEL_BUCKET).upload(
-                path=MODEL_FILE,
+                path=file_path,   # file name in Supabase
                 file=f,
                 file_options={"upsert": "true"}
             )
-        st.success("Model uploaded to Supabase successfully")
+        st.success(f"{file_path} uploaded successfully")
     except Exception as e:
         st.error(f"Upload failed: {e}")
+
+# def upload_model_to_supabase(): 
+#     try: 
+#         with open(model_path, "rb") as f: 
+#             supabase.storage.from_(MODEL_BUCKET).upload( 
+#                 path=MODEL_FILE, file=f, 
+#                 file_options={"upsert": "true"} ) 
+#         st.success("Model uploaded to Supabase successfully") 
+#     except Exception as e: 
+#         st.error(f"Upload failed: {e}")
+
+
 
 #####################################################################################
 def download_model_from_supabase():
