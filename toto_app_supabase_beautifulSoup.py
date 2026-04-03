@@ -379,7 +379,7 @@ elif tab == "Machine Learning Prediction":
             targets = np.array(targets)
             st.write(f"Prepared {len(sequences)} sequences (window={window_size}) — features=49")
 
-            model_path = "lstm_model.h5"
+            model_path_h5 = "lstm_model.h5"
             model_path_keras = "lstm_model.keras"
 
             # --- Build model ---
@@ -396,11 +396,11 @@ elif tab == "Machine Learning Prediction":
                 return model
 
             model = None
-            if os.path.exists(model_path):
+            if os.path.exists(model_path_h5):
                 st.info("Saved model found on disk")
                 if st.button("Load saved model"):
                     with st.spinner("Loading model..."):
-                        model = keras.models.load_model(model_path)
+                        model = keras.models.load_model(model_path_h5)
                     st.success("Model loaded")
 
             # --- Train LSTM ---
