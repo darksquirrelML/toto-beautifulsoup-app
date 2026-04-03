@@ -18,6 +18,9 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 
+st.write("KERAS exists:", os.path.exists(model_path_keras))
+st.write("KERAS size:", os.path.getsize(model_path_keras))
+
 # -------------------------
 # Supabase setup
 # -------------------------
@@ -33,17 +36,35 @@ MODEL_BUCKET = "models"
 MODEL_FILE = "lstm_model.h5"
 model_path = "lstm_model.h5"
 
+
 def upload_model_to_supabase(file_path):
     try:
         with open(file_path, "rb") as f:
             supabase.storage.from_(MODEL_BUCKET).upload(
-                path=file_path,
+                path=os.path.basename(file_path),  # safer filename
                 file=f,
-                file_options={"upsert": "true"}
+                file_options={
+                    "upsert": "true",
+                    "content-type": "application/octet-stream"
+                }
             )
         st.success(f"{file_path} uploaded successfully")
     except Exception as e:
-        st.error(f"Upload failed: {e}")
+        st.error(f"Upload failed for {file_path}: {e}")
+
+
+
+# def upload_model_to_supabase(file_path):
+#     try:
+#         with open(file_path, "rb") as f:
+#             supabase.storage.from_(MODEL_BUCKET).upload(
+#                 path=file_path,
+#                 file=f,
+#                 file_options={"upsert": "true"}
+#             )
+#         st.success(f"{file_path} uploaded successfully")
+#     except Exception as e:
+#         st.error(f"Upload failed: {e}")
 
 # def upload_model_to_supabase(): 
 #     try: 
