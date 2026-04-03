@@ -31,24 +31,37 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # -------------------------
 MODEL_BUCKET = "models"
 MODEL_FILE = "lstm_model.h5"
-# model_path = "lstm_model.h5"
-model_path_h5 = "lstm_model.h5"
+model_path = "lstm_model.h5"
+# model_path_h5 = "lstm_model.h5"
 model_path_keras = "lstm_model.keras"
+
 
 def upload_model_to_supabase(file_path):
     try:
         with open(file_path, "rb") as f:
             supabase.storage.from_(MODEL_BUCKET).upload(
-                path=os.path.basename(file_path),  # safer filename
+                path=file_path,
                 file=f,
-                file_options={
-                    "upsert": "true",
-                    "content-type": "application/octet-stream"
-                }
+                file_options={"upsert": "true"}
             )
-        st.success(f"{file_path} uploaded successfully")
     except Exception as e:
-        st.error(f"Upload failed for {file_path}: {e}")
+        st.error(e)
+
+
+# def upload_model_to_supabase(file_path):
+#     try:
+#         with open(file_path, "rb") as f:
+#             supabase.storage.from_(MODEL_BUCKET).upload(
+#                 path=os.path.basename(file_path),  # safer filename
+#                 file=f,
+#                 file_options={
+#                     "upsert": "true",
+#                     "content-type": "application/octet-stream"
+#                 }
+#             )
+#         st.success(f"{file_path} uploaded successfully")
+#     except Exception as e:
+#         st.error(f"Upload failed for {file_path}: {e}")
 
 
 
@@ -114,11 +127,11 @@ if "lstm_model" not in st.session_state:
 # Now safe to check
 # if st.session_state.lstm_model is None:
 if "lstm_model" not in st.session_state or st.session_state.lstm_model is None:    
-    if os.path.exists(model_path_h5):
-        st.session_state.lstm_model = keras.models.load_model(model_path_h5)
+    if os.path.exists(model_path):
+        st.session_state.lstm_model = keras.models.load_model(model_path)
     else:
         if download_model_from_supabase():
-            st.session_state.lstm_model = keras.models.load_model(model_path_h5)
+            st.session_state.lstm_model = keras.models.load_model(model_path)
 
 ##################################################################################################################
 # -------------------------
@@ -379,7 +392,7 @@ elif tab == "Machine Learning Prediction":
             targets = np.array(targets)
             st.write(f"Prepared {len(sequences)} sequences (window={window_size}) — features=49")
 
-            model_path_h5 = "lstm_model.h5"
+            model_path = "lstm_model.h5"
             model_path_keras = "lstm_model.keras"
 
             # --- Build model ---
@@ -396,11 +409,11 @@ elif tab == "Machine Learning Prediction":
                 return model
 
             model = None
-            if os.path.exists(model_path_h5):
+            if os.path.exists(model_path):
                 st.info("Saved model found on disk")
                 if st.button("Load saved model"):
                     with st.spinner("Loading model..."):
-                        model = keras.models.load_model(model_path_h5)
+                        model = keras.models.load_model(model_path)
                     st.success("Model loaded")
 
             # --- Train LSTM ---
@@ -442,7 +455,7 @@ elif tab == "Machine Learning Prediction":
 #########################################################################################################################################
                 # model.save(model_path)
                 
-                model.save(model_path_h5)
+                model.save(model_path)
                 model.save(model_path_keras)
 
                 # 🔍 DEBUG CHECK (add here)
@@ -455,7 +468,7 @@ elif tab == "Machine Learning Prediction":
                     st.error("KERAS file NOT created!")
                 
                 # Upload
-                upload_model_to_supabase(model_path_h5)
+                upload_model_to_supabase(model_path)
                 upload_model_to_supabase(model_path_keras)
                 
                                           
