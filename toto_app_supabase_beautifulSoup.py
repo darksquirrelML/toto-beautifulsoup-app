@@ -114,11 +114,11 @@ if "lstm_model" not in st.session_state:
 # Now safe to check
 # if st.session_state.lstm_model is None:
 if "lstm_model" not in st.session_state or st.session_state.lstm_model is None:    
-    if os.path.exists(model_path):
-        st.session_state.lstm_model = keras.models.load_model(model_path)
+    if os.path.exists(model_path_h5):
+        st.session_state.lstm_model = keras.models.load_model(model_path_h5)
     else:
         if download_model_from_supabase():
-            st.session_state.lstm_model = keras.models.load_model(model_path)
+            st.session_state.lstm_model = keras.models.load_model(model_path_h5)
 
 ##################################################################################################################
 # -------------------------
