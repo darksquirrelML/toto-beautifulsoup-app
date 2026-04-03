@@ -18,9 +18,6 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 
-st.write("KERAS exists:", os.path.exists(model_path_keras))
-st.write("KERAS size:", os.path.getsize(model_path_keras))
-
 # -------------------------
 # Supabase setup
 # -------------------------
@@ -443,11 +440,29 @@ elif tab == "Machine Learning Prediction":
                     })
 #########################################################################################################################################
                 # model.save(model_path)
-                model.save(model_path)
-                model_path_keras = "lstm_model.keras"
                 
-                upload_model_to_supabase()
+                model.save(model_path_h5)
+                model.save(model_path_keras)
+
+                # 🔍 DEBUG CHECK (add here)
+                import os
+                st.write("KERAS exists:", os.path.exists(model_path_keras))
+                
+                if os.path.exists(model_path_keras):
+                    st.write("KERAS size:", os.path.getsize(model_path_keras))
+                else:
+                    st.error("KERAS file NOT created!")
+                
+                # Upload
+                upload_model_to_supabase(model_path_h5)
                 upload_model_to_supabase(model_path_keras)
+                
+                                          
+                # model.save(model_path)
+                # model_path_keras = "lstm_model.keras"
+                
+                # upload_model_to_supabase()
+                # upload_model_to_supabase(model_path_keras)
                 
                 st.session_state.lstm_model = model
 ######################################################################################################################
