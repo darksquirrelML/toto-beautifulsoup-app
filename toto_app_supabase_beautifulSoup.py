@@ -35,20 +35,20 @@ MODEL_FILE = "lstm_model.h5"
 model_path_h5 = "lstm_model.h5"
 model_path_keras = "lstm_model.keras"
 
-# def upload_model_to_supabase(file_path):
-#     try:
-#         with open(file_path, "rb") as f:
-#             supabase.storage.from_(MODEL_BUCKET).upload(
-#                 path=os.path.basename(file_path),  # safer filename
-#                 file=f,
-#                 file_options={
-#                     "upsert": "true",
-#                     "content-type": "application/octet-stream"
-#                 }
-#             )
-#         st.success(f"{file_path} uploaded successfully")
-#     except Exception as e:
-#         st.error(f"Upload failed for {file_path}: {e}")
+def upload_model_to_supabase(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            supabase.storage.from_(MODEL_BUCKET).upload(
+                path=os.path.basename(file_path),  # safer filename
+                file=f,
+                file_options={
+                    "upsert": "true",
+                    "content-type": "application/octet-stream"
+                }
+            )
+        st.success(f"{file_path} uploaded successfully")
+    except Exception as e:
+        st.error(f"Upload failed for {file_path}: {e}")
 
 
 
@@ -64,15 +64,15 @@ model_path_keras = "lstm_model.keras"
 #     except Exception as e:
 #         st.error(f"Upload failed: {e}")
 
-def upload_model_to_supabase(): 
-    try: 
-        with open(model_path, "rb") as f: 
-            supabase.storage.from_(MODEL_BUCKET).upload( 
-                path=MODEL_FILE, file=f, 
-                file_options={"upsert": "true"} ) 
-        st.success("Model uploaded to Supabase successfully") 
-    except Exception as e: 
-        st.error(f"Upload failed: {e}")
+# def upload_model_to_supabase(): 
+#     try: 
+#         with open(model_path, "rb") as f: 
+#             supabase.storage.from_(MODEL_BUCKET).upload( 
+#                 path=MODEL_FILE, file=f, 
+#                 file_options={"upsert": "true"} ) 
+#         st.success("Model uploaded to Supabase successfully") 
+#     except Exception as e: 
+#         st.error(f"Upload failed: {e}")
 
 
 
