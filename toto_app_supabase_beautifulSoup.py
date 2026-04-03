@@ -86,7 +86,7 @@ def download_model_from_supabase():
         r = requests.get(url)
         r.raise_for_status()
 
-        with open(model_path, "wb") as f:
+        with open(model_path_h5, "wb") as f:
             f.write(r.content)
 
         return True
