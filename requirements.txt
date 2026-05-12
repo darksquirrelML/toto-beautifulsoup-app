@@ -7,3 +7,4 @@ reportlab
 supabase
 requests
 beautifulsoup4
+tensorflowjs
