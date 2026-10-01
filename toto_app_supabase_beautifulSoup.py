@@ -392,8 +392,8 @@ elif tab == "Machine Learning Prediction":
             targets = np.array(targets)
             st.write(f"Prepared {len(sequences)} sequences (window={window_size}) — features=49")
 
-            model_path = "lstm_model.h5"
-            model_path_keras = "lstm_model.keras"
+            model_path = "streamlit_lstm_model.h5"
+            model_path_keras = "streamlit_lstm_model.keras"
 
             # --- Build model ---
             def build_model(window_size, features=49):
