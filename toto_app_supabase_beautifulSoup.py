@@ -29,12 +29,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # -------------------------
 # Supabase Storage Config
 # -------------------------
-MODEL_BUCKET = "models"
-MODEL_FILE = "lstm_model.h5"
-model_path = "lstm_model.h5"
-# model_path_h5 = "lstm_model.h5"
-model_path_keras = "lstm_model.keras"
 
+MODEL_BUCKET = "models"
+MODEL_FILE = "streamlit_lstm_model.h5"
+model_path = "streamlit_lstm_model.h5"
+# model_path_h5 = "lstm_model.h5"
+model_path_keras = "streamlit_lstm_model.keras"
 
 def upload_model_to_supabase(file_path):
     try:
