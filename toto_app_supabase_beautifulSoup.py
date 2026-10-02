@@ -235,15 +235,19 @@ def load_data_from_supabase(limit=None):
 # -------------------------
 # Scrape & update button
 # -------------------------
-if st.button("Scrape & Update Latest Draws"):
-    with st.spinner("Fetching latest TOTO draws..."):
-        latest_draws = scrape_toto_latest()
-        if latest_draws:
-            update_supabase(latest_draws)
-            st.success(f"{len(latest_draws)} draws updated in Supabase!")
-        else:
-            st.warning("No draws found or failed to fetch page.")
-    st.session_state['df'] = load_data_from_supabase()
+# if st.button("Scrape & Update Latest Draws"):
+#     with st.spinner("Fetching latest TOTO draws..."):
+#         latest_draws = scrape_toto_latest()
+#         if latest_draws:
+#             update_supabase(latest_draws)
+#             st.success(f"{len(latest_draws)} draws updated in Supabase!")
+#         else:
+#             st.warning("No draws found or failed to fetch page.")
+#     st.session_state['df'] = load_data_from_supabase()
+
+if st.button("Refresh Latest Draws"):
+   st.session_state['df'] = load_data_from_supabase()
+   st.success("Latest draws loaded. New draws are added automatically after each draw.")
 
 # -------------------------
 # Load data into session_state
